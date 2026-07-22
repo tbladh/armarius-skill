@@ -14,6 +14,7 @@ from typing import Any
 
 
 TEXT_EXTENSIONS = {".txt", ".md", ".rst", ".log", ".json", ".xml", ".yaml", ".yml"}
+POWERPOINT_EXTENSIONS = {".pptx", ".pptm", ".ppsx", ".ppsm", ".potx", ".potm"}
 
 
 def module_available(name: str) -> bool:
@@ -146,6 +147,61 @@ def read_docx(source: Path) -> dict[str, Any]:
     return result
 
 
+def read_pptx(source: Path) -> dict[str, Any]:
+    result = base_result(source, "pptx")
+    if not module_available("pptx"):
+        add_missing(result, "python-pptx", "PPTX slide, text, and table extraction")
+        return result
+
+    from pptx import Presentation
+
+    presentation = Presentation(str(source))
+    result["metadata"]["slide_count"] = len(presentation.slides)
+    result["metadata"]["slide_width"] = presentation.slide_width
+    result["metadata"]["slide_height"] = presentation.slide_height
+
+    for slide_index, slide in enumerate(presentation.slides, start=1):
+        slide_text: list[str] = []
+        title = ""
+        table_index = 0
+
+        for shape in slide.shapes:
+            if getattr(shape, "has_text_frame", False) and shape.text_frame:
+                text = shape.text_frame.text or ""
+                if text:
+                    slide_text.append(text)
+                    if shape == slide.shapes.title:
+                        title = text
+            if getattr(shape, "has_table", False):
+                table_index += 1
+                rows = [[cell.text for cell in row.cells] for row in shape.table.rows]
+                result["content"].append(
+                    {
+                        "type": "table",
+                        "locator": f"slide {slide_index} table {table_index}",
+                        "rows": rows,
+                    }
+                )
+
+        notes_text = ""
+        try:
+            if getattr(slide, "has_notes_slide", False):
+                notes_text = slide.notes_slide.notes_text_frame.text or ""
+        except Exception as exc:
+            result["warnings"].append(f"speaker notes extraction failed on slide {slide_index}: {exc}")
+
+        result["content"].append(
+            {
+                "type": "slide",
+                "locator": f"slide {slide_index}",
+                "title": title,
+                "text": "\n".join(slide_text),
+                "notes": notes_text,
+            }
+        )
+    return result
+
+
 def read_workbook(source: Path) -> dict[str, Any]:
     ext = source.suffix.lower()
     result = base_result(source, "xlsx" if ext in {".xlsx", ".xlsm"} else "xls")
@@ -255,6 +311,12 @@ def read_document(source: Path) -> dict[str, Any]:
         result = base_result(source, "doc")
         result["warnings"].append("Legacy DOC needs conversion, usually with LibreOffice/soffice, before Python extraction.")
         return result
+    if ext in POWERPOINT_EXTENSIONS:
+        return read_pptx(source)
+    if ext in {".ppt", ".pps", ".pot"}:
+        result = base_result(source, "ppt")
+        result["warnings"].append("Legacy PPT needs conversion, usually with LibreOffice/soffice, before Python extraction.")
+        return result
     if ext in {".xlsx", ".xlsm", ".xls"}:
         return read_workbook(source)
     if ext == ".csv":
@@ -290,6 +352,10 @@ def text_from_result(result: dict[str, Any]) -> str:
         lines.append(f"## {locator} ({item_type})")
         if "text" in item:
             lines.append(str(item["text"]))
+        if "notes" in item and item["notes"]:
+            lines.append("")
+            lines.append("Notes:")
+            lines.append(str(item["notes"]))
         if "rows" in item:
             for row in item["rows"]:
                 lines.append("\t".join("" if value is None else str(value) for value in row))

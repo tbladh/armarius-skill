@@ -4,8 +4,8 @@ Armarius installs Python packages into the current repository under `.armarius/v
 
 ## Profiles
 
-- `read`: Default profile for document inspection. Installs PDF, DOCX, XLSX, XLS, CSV-adjacent, HTML, and table helpers.
-- `write`: Basic document creation for DOCX, XLSX, and PDF.
+- `read`: Default profile for document inspection. Installs PDF, DOCX, PPTX/PPSX/POTX, XLSX, XLS, CSV-adjacent, HTML, and table helpers.
+- `write`: Basic document creation for DOCX, PPTX, XLSX, and PDF.
 - `ocr`: Python OCR bindings. Requires the separate system `tesseract` executable.
 - `all`: Installs every bundled profile.
 

@@ -77,6 +77,65 @@ def write_docx(text: str, output: Path) -> None:
     document.save(str(output))
 
 
+def split_deck_text(text: str) -> list[tuple[str, list[str]]]:
+    slides: list[tuple[str, list[str]]] = []
+    title: str | None = None
+    bullets: list[str] = []
+
+    def flush() -> None:
+        nonlocal title, bullets
+        if title is None and not bullets:
+            return
+        slides.append((title or "Slide", bullets))
+        title = None
+        bullets = []
+
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if line in {"---", "===", "***"}:
+            flush()
+            continue
+        if line.startswith("# "):
+            flush()
+            title = line[2:].strip() or "Slide"
+            continue
+        if line.startswith("## "):
+            flush()
+            title = line[3:].strip() or "Slide"
+            continue
+        if not line:
+            continue
+        if title is None:
+            title = line
+        else:
+            bullets.append(line.lstrip("-* ").strip())
+
+    flush()
+    return slides or [("Slide", [])]
+
+
+def write_pptx(text: str, output: Path) -> None:
+    from pptx import Presentation
+
+    presentation = Presentation()
+    for title, bullets in split_deck_text(text):
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = title
+        body = slide.placeholders[1].text_frame
+        body.clear()
+        if not bullets:
+            body.text = ""
+            continue
+        first = body.paragraphs[0]
+        first.text = bullets[0]
+        first.level = 0
+        for bullet in bullets[1:]:
+            paragraph = body.add_paragraph()
+            paragraph.text = bullet
+            paragraph.level = 0
+    presentation.save(str(output))
+
+
 def write_pdf(text: str, output: Path) -> None:
     from reportlab.lib.pagesizes import letter
     from reportlab.pdfgen import canvas
@@ -136,6 +195,10 @@ def build_parser() -> argparse.ArgumentParser:
     docx_parser.add_argument("--input", help="Input text path. Defaults to stdin.")
     docx_parser.add_argument("--output", help="Output DOCX path. Defaults to .armarius/outputs/output.docx.")
 
+    pptx_parser = subparsers.add_parser("text-to-pptx", help="Write plain/markdown-like text to PPTX.")
+    pptx_parser.add_argument("--input", help="Input text path. Defaults to stdin.")
+    pptx_parser.add_argument("--output", help="Output PPTX path. Defaults to .armarius/outputs/output.pptx.")
+
     pdf_parser = subparsers.add_parser("text-to-pdf", help="Write plain text to a simple PDF.")
     pdf_parser.add_argument("--input", help="Input text path. Defaults to stdin.")
     pdf_parser.add_argument("--output", help="Output PDF path. Defaults to .armarius/outputs/output.pdf.")
@@ -156,6 +219,10 @@ def main() -> int:
         output = Path(args.output).resolve() if args.output else default_output(repo_root, "output.docx")
         output.parent.mkdir(parents=True, exist_ok=True)
         write_docx(read_input_text(args.input), output)
+    elif args.command == "text-to-pptx":
+        output = Path(args.output).resolve() if args.output else default_output(repo_root, "output.pptx")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        write_pptx(read_input_text(args.input), output)
     elif args.command == "text-to-pdf":
         output = Path(args.output).resolve() if args.output else default_output(repo_root, "output.pdf")
         output.parent.mkdir(parents=True, exist_ok=True)

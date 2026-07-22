@@ -5,6 +5,7 @@ Writing support is intentionally basic and output-oriented.
 ## Supported Defaults
 
 - Text or markdown-like text to DOCX.
+- Text or markdown-like text to PPTX.
 - Text to simple PDF.
 - JSON rows or extraction-like content to XLSX.
 

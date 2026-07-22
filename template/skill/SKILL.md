@@ -1,6 +1,6 @@
 ---
 name: __PRODUCT_NAME__
-description: Goal-oriented document reading and writing starter kit for PDF, Word, Excel, CSV/TSV, text, HTML, and converted document work. Use when an agent needs to inspect, extract, summarize, compare, transform, convert, or create documents; when practical Python document dependencies should be installed automatically; or when repo-local document tooling should be scaffolded under `.armarius`.
+description: Goal-oriented document reading and writing starter kit for PDF, Word, PowerPoint, Excel, CSV/TSV, text, HTML, and converted document work. Use when an agent needs to inspect, extract, summarize, compare, transform, convert, or create documents, decks, or spreadsheets; when practical Python document dependencies should be installed automatically; or when repo-local document tooling should be scaffolded under `.armarius`.
 ---
 
 # __PRODUCT_TITLE__
@@ -65,7 +65,7 @@ Writing is secondary but supported. Use:
 <skill-dir>/scripts/armarius-write --help
 ```
 
-Use writing helpers for basic DOCX, XLSX, and PDF creation. For complex preservation of existing formatting, inspect the source format directly and make a targeted local helper.
+Use writing helpers for basic DOCX, PPTX, XLSX, and PDF creation. For complex preservation of existing formatting, inspect the source format directly and make a targeted local helper.
 
 Read `references/writing-contract.md` before promising formatting fidelity.
 

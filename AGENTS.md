@@ -15,7 +15,7 @@ This repository builds and distributes a portable document-work skill for agent 
 
 Maintain a goal-oriented starter kit that helps agents make fast, competent progress on document tasks:
 
-- Read PDFs, Word documents, spreadsheets, CSV/TSV, text, HTML, and common converted forms.
+- Read PDFs, Word documents, PowerPoint decks, spreadsheets, CSV/TSV, text, HTML, and common converted forms.
 - Set up practical Python dependencies automatically in the target repository under `.armarius/venv`.
 - Write extracted text and structured JSON under `.armarius/outputs`.
 - Create repo-local custom helper scripts under `.armarius/scripts` when a task needs them.

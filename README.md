@@ -1,6 +1,6 @@
 # Armarius
 
-Armarius is a portable document-work starter kit for agents. It helps a harness quickly set up repo-local Python tooling, read document formats, and write basic outputs without relying on global packages.
+Armarius is a portable document-work starter kit for agents. It helps a harness quickly set up repo-local Python tooling, read documents, decks, spreadsheets, and write basic outputs without relying on global packages.
 
 The skill defaults all task-local tooling and artifacts to the current repository:
 
@@ -64,6 +64,7 @@ Ask your agent to use Armarius for document work, for example:
 ```text
 Use $armarius to read this PDF and summarize the obligations by section.
 Use $armarius to inspect this workbook and explain the calculated columns.
+Use $armarius to read this PowerPoint and summarize each slide.
 Use $armarius to convert this markdown summary into a DOCX.
 ```
 

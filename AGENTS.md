@@ -7,6 +7,7 @@ This repository builds and distributes a portable document-work skill for agent 
 `AGENTS.md` is the shared instruction file for this repo.
 
 - Keep shared repo guidance here.
+- Keep `CLAUDE.md`, `.cursorrules`, and `.cursor/rules/*.mdc` as thin bridges back to this file. Kiro can consume `AGENTS.md` directly.
 - Keep skill behavior in `template/skill/SKILL.md` and linked references.
 - Keep helper behavior in `template/skill/scripts/`.
 
@@ -28,7 +29,7 @@ Maintain a goal-oriented starter kit that helps agents make fast, competent prog
 - `template/skill/references/`: Detailed extraction, dependency, and writing guidance.
 - `config/defaults.env`: Centralized product naming.
 - `scripts/render_skill.py`: Render the template into a concrete skill folder.
-- `install.sh` and `install.ps1`: Install the rendered skill into local agent harness paths.
+- `install.sh` and `install.ps1`: Global installers for Codex, Claude, Cursor, Kiro, Cline, GitHub Copilot, and Windsurf. The default broad install targets Codex/Claude/Cursor/Kiro/Cline only; Copilot and Windsurf piggyback on `~/.agents/skills` by default and their native paths are explicit opt-ins.
 
 ## Working Rules
 
@@ -37,4 +38,6 @@ Maintain a goal-oriented starter kit that helps agents make fast, competent prog
 - Prefer deterministic helper scripts over one-off extraction snippets.
 - Keep `SKILL.md` concise and push detailed guidance into one-level references.
 - Validate rendered skill output, not only template source.
+- Keep the portable skill itself free of harness-specific behavior except for optional metadata files and path-resolution fallbacks.
+- Preserve Engram-style default install semantics: `--all` must not install native Copilot or Windsurf paths because they discover the shared `.agents` install.
 - Do not commit or push changes without explicit user approval for that specific commit or push.

@@ -1,6 +1,6 @@
 ---
 name: __PRODUCT_NAME__
-description: Goal-oriented document reading and writing starter kit for PDF, Word, Excel, CSV/TSV, text, HTML, and converted document work. Use when Codex needs to inspect, extract, summarize, compare, transform, convert, or create documents; when practical Python document dependencies should be installed automatically; or when repo-local document tooling should be scaffolded under `.armarius`.
+description: Goal-oriented document reading and writing starter kit for PDF, Word, Excel, CSV/TSV, text, HTML, and converted document work. Use when an agent needs to inspect, extract, summarize, compare, transform, convert, or create documents; when practical Python document dependencies should be installed automatically; or when repo-local document tooling should be scaffolded under `.armarius`.
 ---
 
 # __PRODUCT_TITLE__
@@ -19,7 +19,7 @@ Do not ask whether to install normal Python document-reading packages. Install t
 
 ## Quick Start
 
-1. Resolve the absolute directory containing this `SKILL.md`. This is the installed skill directory, not necessarily the current workspace.
+1. Resolve the absolute directory containing this `SKILL.md` as `<skill-dir>`. This is the installed skill directory, not the current workspace. In Claude Code, `${CLAUDE_SKILL_DIR}` is available. In Kiro global installs, use `~/.kiro/skills/__PRODUCT_NAME__` if no skill path is exposed. In Cline global installs, use `~/.cline/skills/__PRODUCT_NAME__` if no skill path is exposed. In GitHub Copilot native installs, use `~/.copilot/skills/__PRODUCT_NAME__` if no skill path is exposed. In Windsurf global installs, use `~/.codeium/windsurf/skills/__PRODUCT_NAME__` if no skill path is exposed. In other harnesses, use this skill's listed file path.
 2. Treat the current repository or working directory as the task root.
 3. Bootstrap document-reading tooling:
 

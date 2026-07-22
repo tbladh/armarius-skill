@@ -1,0 +1,4 @@
+interface:
+  display_name: "__PRODUCT_TITLE__"
+  short_description: "Read and write documents with repo-local Python tooling"
+  default_prompt: "Use $__PRODUCT_NAME__ to set up repo-local document tooling, read the document, and work from the extracted artifacts."

@@ -1,0 +1,4 @@
+.armarius/
+rendered/
+*.pyc
+__pycache__/

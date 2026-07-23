@@ -7,6 +7,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -15,6 +16,7 @@ from typing import Any
 
 TEXT_EXTENSIONS = {".txt", ".md", ".rst", ".log", ".json", ".xml", ".yaml", ".yml"}
 POWERPOINT_EXTENSIONS = {".pptx", ".pptm", ".ppsx", ".ppsm", ".potx", ".potm"}
+IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".gif", ".webp"}
 
 
 def module_available(name: str) -> bool:
@@ -31,13 +33,45 @@ def venv_python(repo_root: Path) -> Path:
     return repo_root / ".armarius" / "venv" / "bin" / "python"
 
 
-def maybe_reexec_in_venv(args: argparse.Namespace) -> None:
+def profile_for_source(source: Path, requested: str) -> str:
+    if requested != "auto":
+        return requested
+    ext = source.suffix.lower()
+    if ext == ".pdf":
+        return "pdf"
+    if ext == ".docx":
+        return "word"
+    if ext in POWERPOINT_EXTENSIONS:
+        return "deck"
+    if ext in {".xlsx", ".xlsm", ".xls"}:
+        return "sheet"
+    if ext in {".html", ".htm"}:
+        return "html"
+    if ext in IMAGE_EXTENSIONS:
+        return "image-ocr"
+    return "core"
+
+
+def maybe_reexec_in_venv(args: argparse.Namespace, source: Path) -> None:
     if args.no_bootstrap or os.environ.get("ARMARIUS_IN_VENV") == "1":
+        return
+    profile = profile_for_source(source, args.profile)
+    if profile == "core":
         return
     bootstrap = script_dir() / "armarius_bootstrap.py"
     repo_root = Path(args.repo_root or os.getcwd()).resolve()
     completed = subprocess.run(
-        [sys.executable, str(bootstrap), "--repo-root", str(repo_root), "--profile", args.profile, "--json"],
+        [
+            sys.executable,
+            str(bootstrap),
+            "--repo-root",
+            str(repo_root),
+            "--source",
+            str(source),
+            "--profile",
+            profile,
+            "--json",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -74,6 +108,9 @@ def base_result(source: Path, kind: str) -> dict[str, Any]:
 
 
 def add_missing(result: dict[str, Any], package: str, purpose: str) -> None:
+    for item in result["missing_dependencies"]:
+        if item.get("package") == package and item.get("purpose") == purpose:
+            return
     result["missing_dependencies"].append({"package": package, "purpose": purpose})
 
 
@@ -202,6 +239,42 @@ def read_pptx(source: Path) -> dict[str, Any]:
     return result
 
 
+def read_image_ocr(source: Path) -> dict[str, Any]:
+    result = base_result(source, "image")
+    if not module_available("PIL"):
+        add_missing(result, "pillow", "image loading and metadata extraction")
+        return result
+    if not module_available("pytesseract"):
+        add_missing(result, "pytesseract", "image OCR")
+        return result
+
+    from PIL import Image
+    import pytesseract
+
+    with Image.open(source) as image:
+        result["metadata"]["image_format"] = image.format
+        result["metadata"]["width"] = image.width
+        result["metadata"]["height"] = image.height
+        result["metadata"]["mode"] = image.mode
+        prepared = image.convert("RGB")
+        try:
+            text = pytesseract.image_to_string(prepared) or ""
+        except pytesseract.TesseractNotFoundError:
+            add_missing(result, "tesseract", "system OCR executable used by pytesseract")
+            result["warnings"].append("Tesseract is not installed or not on PATH; image metadata was extracted without OCR text.")
+            text = ""
+        except Exception as exc:
+            result["warnings"].append(f"image OCR failed: {exc}")
+            text = ""
+
+    if shutil.which("tesseract") is None:
+        add_missing(result, "tesseract", "system OCR executable used by pytesseract")
+    result["content"].append({"type": "image_ocr", "locator": source.name, "text": text})
+    if not text:
+        result["warnings"].append("No OCR text was extracted from the image.")
+    return result
+
+
 def read_workbook(source: Path) -> dict[str, Any]:
     ext = source.suffix.lower()
     result = base_result(source, "xlsx" if ext in {".xlsx", ".xlsm"} else "xls")
@@ -317,6 +390,8 @@ def read_document(source: Path) -> dict[str, Any]:
         result = base_result(source, "ppt")
         result["warnings"].append("Legacy PPT needs conversion, usually with LibreOffice/soffice, before Python extraction.")
         return result
+    if ext in IMAGE_EXTENSIONS:
+        return read_image_ocr(source)
     if ext in {".xlsx", ".xlsm", ".xls"}:
         return read_workbook(source)
     if ext == ".csv":
@@ -368,7 +443,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("source", help="Document path to extract.")
     parser.add_argument("--repo-root", help="Target repository root. Defaults to the current directory.")
     parser.add_argument("--out", help="Output directory. Defaults to .armarius/outputs/<document-stem>.")
-    parser.add_argument("--profile", default="read", choices=["read", "all", "ocr"], help="Bootstrap profile.")
+    parser.add_argument(
+        "--profile",
+        default="auto",
+        choices=[
+            "auto",
+            "core",
+            "pdf",
+            "word",
+            "deck",
+            "sheet",
+            "html",
+            "image-ocr",
+            "read",
+            "ocr",
+            "all",
+        ],
+        help="Bootstrap profile. Defaults to auto, which sniffs the source file.",
+    )
     parser.add_argument("--no-bootstrap", action="store_true", help="Do not create/use .armarius/venv first.")
     parser.add_argument("--json", action="store_true", help="Print JSON result.")
     return parser
@@ -377,11 +469,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    maybe_reexec_in_venv(args)
-
     source = Path(args.source).resolve()
     if not source.exists():
         parser.error(f"source does not exist: {source}")
+    maybe_reexec_in_venv(args, source)
     repo = Path(args.repo_root or os.getcwd()).resolve()
     out_dir = stable_output_dir(repo, source, args.out)
     out_dir.mkdir(parents=True, exist_ok=True)

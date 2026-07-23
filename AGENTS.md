@@ -15,8 +15,8 @@ This repository builds and distributes a portable document-work skill for agent 
 
 Maintain a goal-oriented starter kit that helps agents make fast, competent progress on document tasks:
 
-- Read PDFs, Word documents, PowerPoint decks, spreadsheets, CSV/TSV, text, HTML, and common converted forms.
-- Set up practical Python dependencies automatically in the target repository under `.armarius/venv`.
+- Read PDFs, Word documents, PowerPoint decks, spreadsheets, standalone images via OCR, CSV/TSV, text, HTML, and common converted forms.
+- Sniff file scope before setup and install only required Python dependencies in the target repository under `.armarius/venv`.
 - Write extracted text and structured JSON under `.armarius/outputs`.
 - Create repo-local custom helper scripts under `.armarius/scripts` when a task needs them.
 - Make it straightforward to promote generally useful local scripts or lessons back into this skill repo.
@@ -35,6 +35,7 @@ Maintain a goal-oriented starter kit that helps agents make fast, competent prog
 
 - Default document-work state belongs in the current repository under `.armarius/`.
 - Do not install Python packages globally from skill scripts.
+- Keep `.armarius` parsimonious: create `venv`, `outputs`, and `scripts` only when the current job actually needs each path.
 - Prefer deterministic helper scripts over one-off extraction snippets.
 - Keep `SKILL.md` concise and push detailed guidance into one-level references.
 - Validate rendered skill output, not only template source.

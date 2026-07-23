@@ -14,7 +14,7 @@ Each `armarius-read` run writes:
 ```json
 {
   "source_path": "/absolute/input/path",
-  "kind": "pdf|docx|pptx|ppt|xlsx|xls|csv|tsv|html|text|unknown",
+  "kind": "pdf|docx|pptx|ppt|xlsx|xls|csv|tsv|html|text|image|unknown",
   "metadata": {},
   "content": [],
   "warnings": [],
@@ -37,6 +37,7 @@ Prefer content items with clear locators:
 - PPTX slides: `{"type": "slide", "locator": "slide 3", "title": "...", "text": "..."}`
 - PPTX tables: `{"type": "table", "locator": "slide 3 table 1", "rows": [...]}`
 - XLSX sheets: `{"type": "sheet", "locator": "Sheet1", "rows": [...]}`
+- Images: `{"type": "image_ocr", "locator": "screenshot.png", "text": "..."}`
 
 ## Quality Rules
 
@@ -45,4 +46,5 @@ Prefer content items with clear locators:
 - Prefer values over formatting unless the user asks about layout.
 - For spreadsheets, capture sheet names, dimensions, formulas, and visible values where available.
 - For decks, preserve slide numbers, titles, body text, tables, and speaker notes where available.
+- For images, capture dimensions and OCR text when Tesseract is available; otherwise return metadata, missing dependency details, and a clear warning.
 - For PDFs, inspect page counts and extraction length. Low text per page may indicate scanned content.

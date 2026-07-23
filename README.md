@@ -1,14 +1,14 @@
 # Armarius
 
-Armarius is a portable document-work starter kit for agents. It helps a harness quickly set up repo-local Python tooling, read documents, decks, spreadsheets, and write basic outputs without relying on global packages.
+Armarius is a portable document-work starter kit for agents. It helps a harness quickly set up only the repo-local Python tooling needed for the current job, read documents, decks, spreadsheets, standalone images via OCR, and write basic outputs without relying on global packages.
 
-The skill defaults all task-local tooling and artifacts to the current repository:
+The skill defaults task-local tooling and artifacts to the current repository, creating only the paths needed for the current job:
 
 ```text
 .armarius/
-|-- venv/
-|-- outputs/
-`-- scripts/
+|-- venv/      # only when dependencies are needed
+|-- outputs/   # when extraction or generated artifacts are written
+`-- scripts/   # only for custom repo-local helpers
 ```
 
 ## Supported Harnesses
@@ -150,7 +150,7 @@ Armarius creates task-local tooling under the current repository:
 .armarius/scripts
 ```
 
-The skill installs practical Python dependencies into `.armarius/venv`, writes extracted text and structured JSON under `.armarius/outputs`, and uses `.armarius/scripts` for custom repo-local helpers when built-in or native harness tooling is not enough.
+The skill sniffs the source file before setup, installs only the needed Python dependency profile into `.armarius/venv`, writes extracted text and structured JSON under `.armarius/outputs`, and uses `.armarius/scripts` for custom repo-local helpers when built-in or native harness tooling is not enough. Plain text and CSV-style reads should not create a venv.
 
 ## Use
 
@@ -160,10 +160,11 @@ Ask your agent to use Armarius for document work, for example:
 Use $armarius to read this PDF and summarize the obligations by section.
 Use $armarius to inspect this workbook and explain the calculated columns.
 Use $armarius to read this PowerPoint and summarize each slide.
+Use $armarius to OCR this screenshot and extract the form fields.
 Use $armarius to convert this markdown summary into a DOCX.
 ```
 
-The skill will create `.armarius/venv`, install practical document-reading packages, extract text and structured JSON, and proceed from those artifacts.
+The skill will sniff the file type, create `.armarius/venv` only when dependencies are needed, extract text and structured JSON, and proceed from those artifacts.
 
 > [!TIP]
 > Example slash prompt:

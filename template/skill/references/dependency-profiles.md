@@ -1,19 +1,29 @@
 # Dependency Profiles
 
-Armarius installs Python packages into the current repository under `.armarius/venv`.
+Armarius installs Python packages into the current repository under `.armarius/venv` only when the current task needs them.
 
 ## Profiles
 
-- `read`: Default profile for document inspection. Installs PDF, DOCX, PPTX/PPSX/POTX, XLSX, XLS, CSV-adjacent, HTML, and table helpers.
-- `write`: Basic document creation for DOCX, PPTX, XLSX, and PDF.
-- `ocr`: Python OCR bindings. Requires the separate system `tesseract` executable.
+- `core`: No dependencies. Use for plain text, markdown, JSON, XML, CSV, and TSV.
+- `pdf`: PDF text and table extraction with `pypdf` and `pdfplumber`.
+- `word`: DOCX extraction with `python-docx`.
+- `deck`: PPTX/PPSX/POTX extraction with `python-pptx`.
+- `sheet`: XLSX/XLSM/XLS extraction with `openpyxl` and `xlrd`.
+- `html`: HTML extraction with `beautifulsoup4` and `lxml`.
+- `image-ocr`: Standalone image OCR for PNG, JPEG, TIFF, BMP, GIF, and WebP. Requires the separate system `tesseract` executable for actual OCR.
+- `read`: Broad document prewarm profile. Use only when the user wants common read dependencies installed up front.
+- `write-docx`, `write-deck`, `write-sheet`, `write-pdf`: Targeted writing profiles.
+- `write`: Broad write prewarm profile. Use only when the user wants all common write dependencies installed up front.
+- `ocr`: Alias for `image-ocr`.
 - `all`: Installs every bundled profile.
 
 ## Default Behavior
 
-Use `read` for any extraction, summary, comparison, or document QA task.
-Use `write` only when creating or exporting documents.
-Use `ocr` only when a PDF appears scanned or text extraction is insufficient.
+Use `armarius-read` with its default `--profile auto` for extraction, summary, comparison, or document QA tasks. It sniffs the source extension and installs the smallest profile required. Plain text and CSV-style files should not create `.armarius/venv`.
+
+Use targeted writing profiles through `armarius-write`; the command selects `write-docx`, `write-deck`, `write-sheet`, or `write-pdf` automatically. Use broad `read`, `write`, or `all` only for deliberate prewarming.
+
+Use `image-ocr` for standalone image OCR. For scanned PDFs, first try `pdf`; then use `image-ocr` only after rendering pages to images with a native harness tool, a system tool, or a repo-local helper.
 
 ## System Tools
 

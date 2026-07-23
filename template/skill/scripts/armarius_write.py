@@ -20,10 +20,23 @@ def venv_python(repo_root: Path) -> Path:
     return repo_root / ".armarius" / "venv" / "bin" / "python"
 
 
+def profile_for_command(command: str) -> str:
+    if command == "text-to-docx":
+        return "write-docx"
+    if command == "text-to-pptx":
+        return "write-deck"
+    if command == "json-to-xlsx":
+        return "write-sheet"
+    if command == "text-to-pdf":
+        return "write-pdf"
+    return "write"
+
+
 def maybe_reexec_in_venv(args: argparse.Namespace) -> None:
     if args.no_bootstrap or os.environ.get("ARMARIUS_IN_VENV") == "1":
         return
     repo_root = Path(args.repo_root or os.getcwd()).resolve()
+    profile = profile_for_command(args.command)
     completed = subprocess.run(
         [
             sys.executable,
@@ -31,7 +44,7 @@ def maybe_reexec_in_venv(args: argparse.Namespace) -> None:
             "--repo-root",
             str(repo_root),
             "--profile",
-            "write",
+            profile,
             "--json",
         ],
         stdout=subprocess.PIPE,

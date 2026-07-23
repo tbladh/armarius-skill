@@ -40,4 +40,4 @@ Continue with available Python-only extraction whenever possible.
 When a task needs custom parsing, create helper scripts under `.armarius/scripts`.
 If the helper is broadly useful across repositories, mention that it can be promoted into `template/skill/scripts` in the Armarius skill repo.
 
-Native harness tooling is allowed. If a native document/spreadsheet/PDF tool solves the task, use it. If it does not fit the file, dependency state, output contract, or custom workflow, use its useful parts as a model and implement the repo-local version under `.armarius/scripts`.
+Native harness tooling is allowed. If a native document, spreadsheet, deck, PDF, or image tool solves the task, use it. If it does not fit the file, dependency state, output contract, or custom workflow, use its useful parts as a model and implement the repo-local version under `.armarius/scripts`.

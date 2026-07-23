@@ -64,11 +64,10 @@ The read command auto-bootstraps by default. Run bootstrap explicitly first when
 Writing is secondary but supported. Use:
 
 ```bash
-<skill-dir>/scripts/armarius-bootstrap --profile write --json
 <skill-dir>/scripts/armarius-write --help
 ```
 
-Use writing helpers for basic DOCX, PPTX, XLSX, and PDF creation. For complex preservation of existing formatting, inspect the source format directly and make a targeted local helper.
+Use writing helpers for basic DOCX, PPTX, XLSX, and PDF creation. `armarius-write` installs only the targeted write profile for the requested command. For complex preservation of existing formatting, inspect the source format directly and make a targeted local helper.
 
 Read `references/writing-contract.md` before promising formatting fidelity.
 
